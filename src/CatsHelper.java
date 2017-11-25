@@ -1,46 +1,24 @@
 import com.sun.jndi.toolkit.url.Uri;
 
-import java.security.PublicKey;
 import java.util.Collections;
 import java.util.List;
 
 public class CatsHelper {
 
-    public interface CutestCatCallback{
-        void onCutestCatSaved(Uri uri);
-        void onError(Exception e);
-    }
+    ApiWrapper apiWrapper;
 
-    Api api;
-
-    public void saveTheCutestCat(String query, CutestCatCallback cutestCatCallback){
-        api.queryCats(query, new Api.CatsQueryCallback(){
+    public void saveTheCutestCat(String query, Callback<Uri> cutestCatCallback){
+        apiWrapper.queryCats(query, new Callback<List<Cat>>() {
             @Override
-            public void onCatListReceived(List<Cat> cats) {
+            public void onResult(List<Cat> cats) {
                 Cat cutest = findCutest(cats);
-                api.store(cutest, new Api.StoreCallback(){
-
-                    @Override
-                    public void onCatStored(Uri uri) {
-                        cutestCatCallback.onCutestCatSaved(uri);
-                    }
-
-                    @Override
-                    public void onStoreFailed(Exception e) {
-                        cutestCatCallback.onError(e);
-                    }
-                });
-
+                apiWrapper.store(cutest, cutestCatCallback);
             }
 
             @Override
-            public void onQueryFailed(Exception e) {
-
+            public void onError(Exception e) {
                 cutestCatCallback.onError(e);
-
             }
-
-
         });
     }
 
